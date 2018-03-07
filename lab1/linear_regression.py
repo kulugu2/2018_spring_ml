@@ -37,6 +37,11 @@ def LU_decompose(A):
                 
     return L, U
 
+def  M_mul_scalar(M, s):
+    n = len(M)
+    for i in range(n):
+        M[i] = map(lambda x: x*s, M[i])
+    return M
 
 if __name__ == '__main__':
     A = [[1,2,3], [4,5,6] , [7,8,9]]
@@ -45,11 +50,14 @@ if __name__ == '__main__':
     D = [[24,3,45], [-2,7,-10], [8,21,24]]
     E = [[3,-0.1,-0.2], [0.1,7,-0.3],[0.3, -0.2,10]]
     M = M_add(A,B)
-    L,U = LU_decompose(C)
-    print(range(3,3))
-#    for i in M2 :
-#        print(i)
+    
+    K = M_mul_scalar(A,3)
+
+#    L,U = LU_decompose(C)
+#    print(range(3,3))
+    for i in K :
+        print(i)
 #    print(A[:])  
-    print(L[:])
-    print(U[:])
-    print(M_mul(L,U)[:])
+#    print(L[:])
+#    print(U[:])
+#    print(M_mul(L,U)[:])
