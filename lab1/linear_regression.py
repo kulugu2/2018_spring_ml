@@ -1,3 +1,4 @@
+import sys
 def eye(n):
     M = [ [1 if (i==j) else 0  for i in range(n)] for j in range(n)]
     return M
@@ -44,9 +45,9 @@ def  M_mul_scalar(M, s):
     return M
 
 def inverse(M):
-    print(M[:])
+    #print(M[:])
     L, U = LU_decompose(M)
-    print(L[:])
+    #print(L[:])
     n = len(L)
 
     """ L inverse  """
@@ -57,11 +58,11 @@ def inverse(M):
             for k in range(j):
                 LI[j][i] -= L[j][k]*LI[k][i]
             LI[j][i] = LI[j][i]/float(L[j][j])
-    print(LI[:])
+    #print(LI[:])
     
     """ U inverse """
-    print("U")
-    print(U[:])
+    #print("U")
+    #print(U[:])
     UI = [[0 for i in range(n)] for j in range(n)]
     for i in range(n-1, -1, -1):
         UI[i][i] = 1/float(U[i][i])
@@ -70,13 +71,21 @@ def inverse(M):
                 UI[j][i] -= U[j][k]*UI[k][i]
             UI[j][i] = UI[j][i]/float(U[j][j])
 
-    print(UI[:])
+    #print(UI[:])
 
     MI = M_mul(UI, LI)
     return MI
 
 def transpose(M):
     return [[M[i][j] for i in range(len(M))] for j in range(len(M[0]))]
+
+def linear_reg(A, b, bases, la):
+    li = M_mul_scalar(eye(bases) ,la)
+    t1 = inverse(M_add(M_mul(transpose(A), A), li))
+    X = M_mul(M_mul(t1, transpose(A)), b)
+
+    return X
+    
 if __name__ == '__main__':
     A = [[1,2,3], [4,5,6] , [7,8,9]]
     B = eye(3)
@@ -89,11 +98,30 @@ if __name__ == '__main__':
     H = [[-2,35],[32,4],[0.5,1.25]]
     K = transpose(H)
     
-#    L,U = LU_decompose(C)
-#    print(range(3,3))
-    for i in K :
-        print(i)
-#    print(A[:])  
-#    print(L[:])
-#    print(U[:])
-#    print(M_mul(L,U)[:])
+    X = []
+    Y = []
+    fp = open(sys.argv[1], 'r')
+    bases = int(sys.argv[2])
+    la = int(sys.argv[3])
+    for line in iter(fp):
+        l = line.strip().split(',')
+        X.append(float(l[0]))
+        Y.append(float(l[1]))
+    #X = transpose([X])
+    #Y = transpose([Y])
+    A = []
+    for x in X:
+        row = [1]
+        for i in range(bases-1):
+            row = [row[0]*x] + row
+        A.append(row)
+    
+    ans = linear_reg(A, transpose([Y]), bases, la)
+    error_M = M_add(M_mul(A, ans), M_mul_scalar(transpose([Y]), -1))
+    error = M_mul(transpose(error_M), error_M)
+        
+    #print(X)
+    #print(Y)
+    #print(A)
+    print(ans)
+    print(error)
