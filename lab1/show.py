@@ -10,7 +10,7 @@ def show(X, Y, l1, l2):
     #    l = line.strip().split(',')
     #    X.append(float(l[0]))
     #    Y.append(float(l[1]))
-    x1 = np.linspace(0,50,100)
+    x1 = np.linspace(min(X),max(X),100)
     y1 = 0
     for i in range(len(l1)):
         y1 += l1[i]*x1**i  
