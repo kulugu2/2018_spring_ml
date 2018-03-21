@@ -1,6 +1,6 @@
 from __future__ import print_function
 import sys
-import show
+#import show
 A = []
 X = []
 Y = []
@@ -161,4 +161,4 @@ if __name__ == '__main__':
     l2 = []
     for i in range(bases):
         l2.append(ans_newton[bases-i-1][0])
-    show.show(X, Y, l1, l2)
+ #   show.show(X, Y, l1, l2)
