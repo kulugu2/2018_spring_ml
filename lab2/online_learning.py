@@ -29,7 +29,7 @@ if __name__ == '__main__':
             else:
                 N += 1
         likelihood = m/float(N)
-        print('likelihood = %f' %(likelihood))
+        print('N:%d, m:%d, likelihood = %f' %(N, m, likelihood))
         print('prior: a=%d, b=%d' %(a,b))
         print('posterior: a=%d, b=%d' %(a+m, N-m+b))
         a = a+m
