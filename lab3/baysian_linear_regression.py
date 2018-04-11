@@ -3,6 +3,7 @@ import random
 import math
 import matplotlib.pyplot as plt
 import linear_model_data_generator as gen
+import numpy as np
 
 def eye(n):
     M = [ [1 if (i==j) else 0  for i in range(n)] for j in range(n)]
@@ -92,20 +93,66 @@ if __name__ == '__main__':
     w = []
     for i in range(basis):
         w.append(float(sys.argv[4+i]))
-    
-    m = [[0],[0],[0]]
+     
+    m = [[0] for i in range(basis)]
+    X = []
+    Y = []
     precision = M_mul_scalar(eye(basis), b)
+    it = 0
     while True:
+        
         x, y = gen.linear_gen(w,a)
         print(x, y)
+        X.append(x)
+        Y.append(y)
+
         design = []
         for i in range(basis):
             design.append(x**i)
         old_precision = precision
-        precision = M_add(M_mul_scalar(M_mul(transpose([design]), [design]), 1.0/a), M_mul_scalar(eye(basis),b) )   #aXtX + bI
-        m = M_mul(inverse(precision), M_add(M_mul_scalar(transpose([design]), (1.0/a)*y), M_mul(old_precision, m)))
+        precision = M_add(M_mul_scalar(M_mul(transpose([design]), [design]), 1.0/a), precision )   #aXtX + S
+        m = M_mul(inverse(precision), M_add(M_mul_scalar(transpose([design]), (1.0/a)*y), M_mul(old_precision, m))) 
+        # m = p^(-1)(aXty + Sm)
+
         print(transpose(m))
+        predictive_var = M_mul(M_mul([design], inverse(precision)), transpose([design]))[0][0]
+        print("predictive distribution: ( %f, %f)" %(M_mul([design],m)[0][0], (a + predictive_var) ))
+        
+        plt.scatter(X, Y)
+        t = np.linspace(-10.0, 10.0, 50)
+
+        yy = np.array([])
+        y_up = []
+        d = []
+        for element in t:
+            tmp = 0
+            for i in range(basis):
+                tmp += element**i * m[i][0]
+            yy = np.append(yy, tmp)
+        
+        for element in t:
+            tmp = []
+            for i in range(basis):
+                tmp.append(element**i)
+            d.append(tmp)
+
+        y_up = M_mul(d, m)
+        y_down = M_mul(d,m)
+        var = []
+        for element in d:
+            var.append( M_mul(M_mul([element], inverse(precision)), transpose([element]))[0])
+        #var = M_mul(M_mul(d, inverse(precision)), transpose(d))
+        y_up = np.array(y_up) + 5 * np.sqrt(a + np.array(var))
+        #print(y_up)
+        
+        y_down = np.array(y_down) - 5 * np.sqrt(a + np.array(var))
+            
+        plt.plot(t, yy)
+        plt.plot(t, y_up)
+        plt.plot(t, y_down)
+        plt.show()
         input()
+        it += 1
 
 
 
