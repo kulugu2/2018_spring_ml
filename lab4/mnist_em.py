@@ -1,6 +1,7 @@
 import sys
 import math
 import random
+import copy
 from mnist import MNIST
 mnist_repo = '../lab2/'
 
@@ -19,10 +20,17 @@ def bin_4to1_convert(x):
     return y
     
 def convert(x):
-    if x > 90:
-        return 1
-    else:
-        return 0
+    y = [[0.0 for i in range(len(x[0]))] for j in range(len(x))]
+    for i in range(len(x)):
+        for j in range(len(x[i])):
+            if x[i][j] > 150:
+                y[i][j] = 1
+            else:
+                y[i][j] = 0
+    return y
+        
+
+
 
 if  __name__ == '__main__':
     
@@ -38,7 +46,7 @@ if  __name__ == '__main__':
     
     num_of_pixel = image_row * image_col
     
-    n = 100
+    n = 10000
 
     train_lb.seek(8)
     label = []
@@ -46,17 +54,18 @@ if  __name__ == '__main__':
         label.append(int.from_bytes(train_lb.read(1), byteorder='big'))
     print(type(label[1]))
     K = 10
-    p = [[random.random() for i in range(196)] for j in range(K)]  #p[10][784]
+    p = [[random.uniform(0.4, 0.6) for i in range(784)] for j in range(K)]  #p[10][784]
     
     x = []
     
 
-    w = [[random.random() for i in range(K)] for j in range(n)]
-    #w = [[1.0 if i == 0 else 0.0 for i in range(K)] for j in range(n)]
-    ld = [0.1, 0.2, 0.1, 0.2, 0.05, 0.2, 0.05, 0.07, 0.03, 0.2]
+    #w = [[random.uniform(0.4, 0.6) for i in range(K)] for j in range(n)]
+    w = [[1.0 if i == 0 else 0.0 for i in range(K)] for j in range(n)]
+    ld = [0.1, 0.2, 0.1, 0.2, 0.05, 0.2, 0.05, 0.07, 0.03, 0.1]
     for i in range(n):
         x.append(train_im.read(784))
-    x = bin_4to1_convert(x)
+    x = convert(x)
+    #x = bin_4to1_convert(x)
     #for i in range(14):
     #    print(y[2][i*14:i*14+14])
     #t = [0 for i in range(784)]
@@ -64,24 +73,27 @@ if  __name__ == '__main__':
     #    t[i] = convert(x[0][i])
     #for i in range(28):
         #print(t[i*28:i*28+28])
-    #print(p)
-    for a in range(50):
+    a = 0
+    while True:
     #E step
+        old_p = copy.deepcopy(p)
         for i in range(n):
             for j in range(K):
                 if ld[j] == 0:
                     w[i][j] = -40
                 else:
                     w[i][j] = math.log(ld[j])
-                for k in range(196):
+                for k in range(784):
                     if x[i][k] == 1:
                         if p[j][k] == 0:
                             w[i][j] += -10
+                            #print("of")
                         else:
                             w[i][j] += math.log(p[j][k])
                     else:
                         if p[j][k] == 1:
                             w[i][j] += -10
+                            #print("pf")
                         else:
                             w[i][j] += math.log(1 - p[j][k])
             #print(w[i])
@@ -108,7 +120,7 @@ if  __name__ == '__main__':
             ld[i] = s
             #print(ld[i])
         for i in range(K):
-            for j in range(196):
+            for j in range(784):
                 s = 0.0
                 for k in range(n):
                     s += x[k][j]*w[k][i]
@@ -122,11 +134,46 @@ if  __name__ == '__main__':
         print(ld)
         print(sum(ld),a)
         print("finish M step")
-    
+        converge = 1
+        for i in range(K):
+            for j in range(784):
+                if math.fabs(old_p[i][j] - p[i][j]) > 0.005:
+                    converge = 0
+                    break
+        
+        if converge == 1:
+            break
+        a += 1 
     # testing
-    stat = [[]  for i in range(K)]
+    stat = [[0 for i in range(K)]  for j in range(K)]
     
     for i in range(n):
-        stat[w[i].index(max(w[i]))].append(label[i])
+        stat[w[i].index(max(w[i]))][label[i]] += 1
     print(stat)
+    
+    tp = [0 for i in range(K)]
+    tn = [0 for i in range(K)]
+    fp = [0 for i in range(K)]
+    fn = [0 for i in range(K)]
+    kk = [0 for i in range(K)]
+    for i in range(K):
+        kk[i] = stat[i].index(max(stat[i]))
+        tp[i] = stat[i][kk[i]]
+        fp[i] = sum(stat[i]) - tp[i]
+        for j in range(K):
+            fn[i] += stat[j][kk[i]]
+        fn[i] -+ tp[i]
+        tn[i] = n - fp[i] - fn[i] + tp[i]
+    
+    sensitivity = [0 for i in range(K)]
+    specificity = [0 for i in range(K)]
 
+    for i in range(K):
+        sensitivity[i] = tp[i] / float(tp[i]+fn[i])
+        specificity[i] = tn[i] / float(tn[i] + fp[i])
+    print("kk")
+    print(kk)
+    print("sensitivity")
+    print(sensitivity)
+    print("specificity")
+    print(specificity)
