@@ -87,16 +87,13 @@ if  __name__ == '__main__':
                     if x[i][k] == 1:
                         if p[j][k] == 0:
                             w[i][j] += -10
-                            #print("of")
                         else:
                             w[i][j] += math.log(p[j][k])
                     else:
                         if p[j][k] == 1:
                             w[i][j] += -10
-                            #print("pf")
                         else:
                             w[i][j] += math.log(1 - p[j][k])
-            #print(w[i])
             sum_wi = 0 
             for j in range(K):
                 sum_wi += math.exp(w[i][j])
