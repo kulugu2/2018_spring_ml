@@ -12,7 +12,7 @@ def dot(a, b):
 
 file_name = 'train_libsvm_format'
 #file_name = 'test'
-output_file = 'train_precompute_data'
+output_file = 'precompute_libsvm_format'
 
 if __name__ == '__main__':
 
